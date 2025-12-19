@@ -1,15 +1,16 @@
 import subprocess
 import threading
-from flask import Flask, Response, request
+from flask import Flask, Response, json, request
 import dotenv
 import os
 import queue
 import time
+from flask_cors import CORS
 
 dotenv.load_dotenv()
 
 app = Flask(__name__)
-
+CORS(app)
 latest = None
 lock = threading.Lock()
 
@@ -113,19 +114,21 @@ def command_complete():
 
 @app.post("/add_command")
 def add_command():
-    try:
-        if request.remote_addr in ipTimes and time.time() - ipTimes[request.remote_addr] > TIMEOUT_S:
-            data = request.get_json()
-            command = data.get("command")
-            if not command:
-                return {"error": "No command provided"}
-            commandQueue.put(command)
-            ipTimes[request.remote_addr] = time.time()
-            return {"status": "success"}
-        else:
-            return {"status": "error", "message": f"you need to wait haha; Time left: {TIMEOUT_S - (time.time() - ipTimes[request.remote_addr])}"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    # try:
+    if request.remote_addr not in ipTimes:
+        ipTimes[request.remote_addr] = 0
+    if request.remote_addr in ipTimes and time.time() - ipTimes[request.remote_addr] > TIMEOUT_S:
+        data = request.get_json()
+        command = data.get("command")
+        if not command:
+            return {"error": "No command provided"}
+        commandQueue.put(command)
+        ipTimes[request.remote_addr] = time.time()
+        return {"status": "success"}
+    else:
+        return Response(json.dumps({"status": "error", "message": f"you need to wait haha; Time left: {TIMEOUT_S - (time.time() - ipTimes[request.remote_addr])}"}), status=429, mimetype="application/json")
+    # except Exception as e:
+    #     return {"status": "error", "message": str(e)}
 
 
 
