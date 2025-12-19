@@ -1,27 +1,43 @@
+import socket
 import subprocess
 import threading
 from flask import Flask, Response
+import dotenv
+
+dotenv.load_dotenv()
+import os
 
 app = Flask(__name__)
 
 latest = None
 lock = threading.Lock()
+SECRET = f"AUTH {os.environ['STREAM_SECRET']}\n".encode("utf-8")
 
 
-# made by ai because idk threading
+# function is made by ai because idk ffmpeg / tcp
 def ffmpeg_reader():
     global latest
+
+    s = socket.socket()
+    s.bind(("0.0.0.0", 5123))
+    s.listen(1)
+    conn, addr = s.accept()
+
+    header = conn.recv(len(SECRET))
+    if header != SECRET:
+        print(f"Rejected connection from {addr}")
+        conn.close()
+        return
+
     proc = subprocess.Popen(
         [
             "ffmpeg",
             "-fflags",
             "nobuffer",
-            "-listen",
-            "1",
             "-flags",
             "low_delay",
             "-i",
-            "tcp://0.0.0.0:5123",
+            "pipe:0",
             "-vf",
             "fps=10",
             "-q:v",
@@ -30,6 +46,7 @@ def ffmpeg_reader():
             "mjpeg",
             "pipe:1",
         ],
+        stdin=conn.makefile("rb"),
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         bufsize=0,
@@ -55,7 +72,7 @@ def mjpeg():
         with lock:
             frame = latest
         if frame:
-            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+            yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
 
 
 @app.route("/stream")
