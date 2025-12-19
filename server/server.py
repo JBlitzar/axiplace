@@ -1,6 +1,10 @@
 import subprocess
 import threading
 from flask import Flask, Response
+import dotenv
+import os
+
+dotenv.load_dotenv()
 
 app = Flask(__name__)
 
@@ -11,6 +15,11 @@ lock = threading.Lock()
 # function is made by ai because idk ffmpeg / tcp
 def ffmpeg_reader():
     global latest
+    source_ip = os.getenv("SOURCE_IP")
+    if not source_ip:
+        print("SOURCE_IP not set !!")
+        return
+
     proc = subprocess.Popen(
         [
             "ffmpeg",
@@ -20,6 +29,8 @@ def ffmpeg_reader():
             "1",
             "-flags",
             "low_delay",
+            "-allowed_ips",
+            source_ip,
             "-i",
             "tcp://0.0.0.0:5123",
             "-vf",
