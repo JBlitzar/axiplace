@@ -3,3 +3,4 @@
 - [ ] proper cors once deploy
 [x] commands queue
 [x] stream "auth"
+[ ] real deployment (systemd + caddyfile)
