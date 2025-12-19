@@ -1,3 +1,4 @@
 [ ] client serving and client features, ofc
+- [ ] web interface
 [ ] commands queue
-[ ] stream "auth"
+[x] stream "auth"
