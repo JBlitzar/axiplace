@@ -11,7 +11,7 @@ STREAM_PORT = 5123
 STREAM_SECRET = os.environ.get("STREAM_SECRET", "default_secret")
 
 
-def fake_callback(c):
+def fake_callback(c): # ts had better be blocking upon implementation
     print(f"Fake callback: {c}")
 
 
@@ -29,70 +29,15 @@ def poll():
 
 def start_stream():
     try:
-        s = socket.create_connection((STREAM_HOST, STREAM_PORT))
-        s.sendall(f"AUTH {STREAM_SECRET}\n".encode())
-        print("AUTH sent, starting video stream...")
-
-        rpicam_cmd = [
-            "rpicam-vid",
-            "-t",
-            "0",
-            "--codec",
-            "yuv420",
-            "--width",
-            "1280",
-            "--height",
-            "720",
-            "--framerate",
-            "20",
-            "-o",
-            "-",
-        ]
-
-        ffmpeg_cmd = [
-            "ffmpeg",
-            "-f",
-            "rawvideo",
-            "-pix_fmt",
-            "yuv420p",
-            "-s",
-            "1280x720",
-            "-r",
-            "20",
-            "-i",
-            "-",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "ultrafast",
-            "-tune",
-            "zerolatency",
-            "-profile:v",
-            "baseline",
-            "-x264-params",
-            "keyint=20:min-keyint=20:scenecut=0:sync-lookahead=0:rc-lookahead=0",
-            "-g",
-            "20",
-            "-bf",
-            "0",
-            "-f",
-            "mpegts",
-            "pipe:1",
-        ]
-
-        rpicam = subprocess.Popen(rpicam_cmd, stdout=subprocess.PIPE)
-
-        ffmpeg = subprocess.Popen(ffmpeg_cmd, stdin=rpicam.stdout, stdout=s)
-
-        ffmpeg.wait()
+       os.system("bash stream.sh &")
     except Exception as e:
         print("Streaming error:", e)
 
 
 def main():
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    os.chdir(os.path.dirname(os.path.abspath(__file__))) # excellent syntactic sugar
 
-    threading.Thread(target=start_stream, daemon=True).start()
+    start_stream()
 
     while True:
         poll()
