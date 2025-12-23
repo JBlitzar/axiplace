@@ -8,6 +8,7 @@ from flask import Flask, Response
 import subprocess
 import threading
 import time
+import requests
 
 app = Flask(__name__)
 
@@ -15,6 +16,25 @@ camera_process = None
 current_frame = b""
 frame_lock = threading.Lock()
 frame_ready = threading.Event()
+
+
+def fake_callback(c):  # ts had better be blocking upon implementation
+    print(f"Fake callback: {c}")
+
+
+API_BASE = "https://axiplace.vercel.app"
+
+
+def poll():
+    try:
+        resp = requests.get(f"{API_BASE}/command")
+        if resp.status_code == 200:
+            val = resp.json()
+            if val.get("command"):
+                fake_callback(val["command"])
+                requests.post(f"{API_BASE}/command_complete", json={"status": "done"})
+    except Exception as e:
+        print("Polling error:", e)
 
 
 def camera_thread():
@@ -95,8 +115,17 @@ def stream():
     )
 
 
+def poll_loop():
+    while True:
+        poll()
+        time.sleep(2)
+
+
 if __name__ == "__main__":
     thread = threading.Thread(target=camera_thread, daemon=True)
     thread.start()
+
+    poller_thread = threading.Thread(target=poll_loop, daemon=True)
+    poller_thread.start()
 
     app.run(host="0.0.0.0", port=8000, threaded=True)
