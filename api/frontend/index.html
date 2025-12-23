@@ -13,7 +13,9 @@
     <div class="container">
       <center>
         <img
-          src="https://example.com/stream"
+          id="stream"
+          src=""
+          alt="Loading stream..."
           style="width: 100%; height: auto; max-width: 720px"
         />
       </center>
@@ -23,16 +25,37 @@
       <button id="send">Send Command</button>
     </div>
     <script>
+      const API_BASE = "https://axiplace.vercel.app";
+
+      async function loadStreamUrl() {
+        try {
+          const resp = await fetch(`${API_BASE}/stream-url`);
+          const data = await resp.json();
+          if (data.stream_url) {
+            document.getElementById("stream").src = data.stream_url;
+          } else {
+            console.error("No stream URL available:", data.error);
+          }
+        } catch (err) {
+          console.error("Failed to fetch stream URL:", err);
+        }
+      }
+
+      loadStreamUrl();
+
       document.getElementById("send").addEventListener("click", async () => {
-        let resp = await fetch("http://127.0.0.1:8000/add_command", {
+        const command = prompt("command: ");
+        if (!command) return;
+
+        let resp = await fetch(`${API_BASE}/add_command`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: `${prompt("command: ")}` }),
+          body: JSON.stringify({ command }),
         });
         let data = await resp.json();
         console.log(resp.status);
         if (data.status != "success") {
-          alert(data.message);
+          alert(data.message || data.error);
         } else {
           alert("Command sent successfully!");
         }

@@ -1,10 +1,7 @@
-import subprocess
-import threading
+import time
 from flask import Flask, Response, json, request
 import dotenv
 import os
-import queue
-import time
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 import redis
@@ -14,12 +11,7 @@ dotenv.load_dotenv()
 app = Flask(__name__)
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
-STREAM_URL = ""
-lock = threading.Lock()
 
-commandQueue = queue.Queue()
-
-ipTimes = {}
 TIMEOUT_S = 300
 
 
@@ -30,8 +22,7 @@ r = redis.Redis(
     ssl=True,
 )
 
-r.set("foo", "bar")
-print(r.get("foo").decode("utf-8"))
+COMMAND_QUEUE_KEY = "command_queue"
 
 
 # is ts auth skib??
@@ -42,11 +33,11 @@ def get_command():
         return {"error": "SOURCE_IP not set"}
     if source_ip != request.remote_addr:
         return {"error": "Unauthorized"}
-    try:
-        command = commandQueue.get_nowait()
-        return {"command": command}
-    except queue.Empty:
-        return {"command": None}
+
+    command = r.lpop(COMMAND_QUEUE_KEY)
+    if command:
+        return {"command": command.decode("utf-8")}
+    return {"command": None}
 
 
 @app.post("/update-stream-url")
@@ -80,42 +71,41 @@ def command_complete():
         return {"error": "SOURCE_IP not set"}
     if source_ip != request.remote_addr:
         return {"error": "Unauthorized"}
-    try:
-        commandQueue.task_done()
-        return {"status": "success"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+
+    return {"status": "success"}
 
 
 @app.post("/add_command")
 def add_command():
-    # try:
-    if request.remote_addr not in ipTimes:
-        ipTimes[request.remote_addr] = 0
-    if (
-        request.remote_addr in ipTimes
-        and time.time() - ipTimes[request.remote_addr] > TIMEOUT_S
-    ):
-        data = request.get_json()
-        command = data.get("command")
-        if not command:
-            return {"error": "No command provided"}
-        commandQueue.put(command)
-        ipTimes[request.remote_addr] = time.time()
-        return {"status": "success"}
-    else:
-        return Response(
-            json.dumps(
-                {
-                    "status": "error",
-                    "message": f"you need to wait haha; Time left: {TIMEOUT_S - (time.time() - ipTimes[request.remote_addr])}",
-                }
-            ),
-            status=429,
-            mimetype="application/json",
-        )
-    # except Exception as e:
-    #     return {"status": "error", "message": str(e)}
+    ip = request.remote_addr
+    rate_limit_key = f"rate_limit:{ip}"
+
+    # Check rate limit in Redis
+    last_time = r.get(rate_limit_key)
+    if last_time:
+        last_time = float(last_time.decode("utf-8"))
+        time_left = TIMEOUT_S - (time.time() - last_time)
+        if time_left > 0:
+            return Response(
+                json.dumps(
+                    {
+                        "status": "error",
+                        "message": f"you need to wait haha; Time left: {time_left:.1f}s",
+                    }
+                ),
+                status=429,
+                mimetype="application/json",
+            )
+
+    data = request.get_json()
+    command = data.get("command")
+    if not command:
+        return {"error": "No command provided"}
+
+    r.rpush(COMMAND_QUEUE_KEY, command)
+
+    r.set(rate_limit_key, str(time.time()), ex=TIMEOUT_S)
+    return {"status": "success"}
 
 
 @app.route("/")
