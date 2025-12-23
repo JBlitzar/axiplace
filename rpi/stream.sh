@@ -1,2 +1,23 @@
-#!/bin/bash 
-rpicam-vid -t 0 --codec yuv420 --width 1280 --height 720 --framerate 20 -o - | ffmpeg -re -fflags nobuffer -flags low_delay -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 20 -i pipe:0 -c:v libx264 -preset ultrafast -tune zerolatency -profile:v baseline -x264-params keyint=20:min-keyint=20:scenecut=0:sync-lookahead=0:rc-lookahead=0 -g 20 -bf 0 -f mpegts tcp://192.168.7.188:5123
+#!/bin/bash
+uv run client.py &
+
+rm -f /tmp/tunnel.log
+
+cloudflared tunnel --url http://localhost:8000 > /tmp/tunnel.log 2>&1 &
+
+
+while [ ! -s /tmp/tunnel.log ]; do sleep 0.5; done
+sleep 10
+
+
+url=$(grep -Eo 'https://[^[:space:]]+\.trycloudflare\.com' /tmp/tunnel.log | head -n 1)
+
+
+# curl -X POST https://PLACEHOLDER_asdfasdjkfhaweuifygewriufghewofguyawegofuigawoeguyaerofgiuywef.vercel.app/update-stream-url \
+#   -H "Content-Type: application/json" \
+#   -d "{\"streamUrl\": \"$url\"}"
+
+echo "Stream available at: $url"
+
+
+wait

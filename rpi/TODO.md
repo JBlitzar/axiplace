@@ -1,5 +1,3 @@
 # TODO
 
-
-- [ ] test real deployment
-- [ ] real commands (last)
+- [ ] add back commands
