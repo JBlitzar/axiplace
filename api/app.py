@@ -7,6 +7,7 @@ import queue
 import time
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
+import redis
 
 dotenv.load_dotenv()
 
@@ -20,6 +21,17 @@ commandQueue = queue.Queue()
 
 ipTimes = {}
 TIMEOUT_S = 300
+
+
+r = redis.Redis(
+    host="smart-squirrel-31858.upstash.io",
+    port=6379,
+    password=os.getenv("REDIS_PASSWORD"),
+    ssl=True,
+)
+
+r.set("foo", "bar")
+print(r.get("foo").decode("utf-8"))
 
 
 # is ts auth skib??
@@ -48,20 +60,17 @@ def update_stream_url():
     stream_url = data.get("stream_url")
     if not stream_url:
         return {"error": "No stream_url provided"}
-    global latest
-    with lock:
-        latest = stream_url
+
+    r.set("stream_url", stream_url)
     return {"status": "success"}
 
 
 @app.get("/stream-url")
 def get_stream_url():
-    global STREAM_URL
-    with lock:
-        url = STREAM_URL
+    url = r.get("stream_url")
     if not url:
         return {"error": "No stream URL set"}
-    return {"stream_url": url}
+    return {"stream_url": url.decode("utf-8")}
 
 
 @app.post("/command_complete")
