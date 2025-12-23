@@ -109,5 +109,10 @@ def add_command():
     #     return {"status": "error", "message": str(e)}
 
 
+@app.route("/")
+def index():
+    return "helo world"
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, threaded=True)  # TODO different port
