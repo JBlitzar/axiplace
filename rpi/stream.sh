@@ -23,3 +23,4 @@ echo "Stream available at: $url"
 wait
 
 killall cloudflared
+killall uv
