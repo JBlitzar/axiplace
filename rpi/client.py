@@ -2,6 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "flask",
+#     "requests",
 # ]
 # ///
 from flask import Flask, Response

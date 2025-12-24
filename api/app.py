@@ -54,6 +54,8 @@ def update_stream_url():
     if not stream_url:
         return {"error": "No stream_url provided"}
 
+    stream_url = stream_url.strip().rstrip("/") + "/stream"
+
     r.set("stream_url", stream_url)
     return {"status": "success"}
 
