@@ -126,6 +126,7 @@
           grid.push(new Cell(x, y));
         }
       }
+      window._cell = grid[0];
 
       canvas.addEventListener("click", (e) => {
         const rect = canvas.getBoundingClientRect();
@@ -232,61 +233,26 @@
           });
       });
       let curCurve = null;
-      function openEditorModal(cell) {
-        const modal = document.getElementById("editor-modal");
-        const mcanvas = new fabric.Canvas("editor-canvas");
+      function moved() {
+        console.log(bezierPath);
+        const pathData = [
+          ["M", p0._inst.left, p0._inst.top],
+          [
+            "C",
+            p1._inst.left,
+            p1._inst.top,
+            p2._inst.left,
+            p2._inst.top,
+            p3._inst.left,
+            p3._inst.top,
+          ],
+        ];
 
-        document.getElementById(
-          "cell-coords"
-        ).innerText = `${cell.x}, ${cell.y}`;
-        modal.style.display = "block";
-        modal.scrollIntoView({ behavior: "smooth", block: "center" });
-        function moved() {
-          console.log(bezierPath);
-          const pathData = [
-            ["M", p0._inst.left, p0._inst.top],
-            [
-              "C",
-              p1._inst.left,
-              p1._inst.top,
-              p2._inst.left,
-              p2._inst.top,
-              p3._inst.left,
-              p3._inst.top,
-            ],
-          ];
-
-          bezierPath.set({ path: pathData });
-          console.log(bezierPath);
-          mcanvas.renderAll();
-          curCurve = {
-            cell: [cell.x, cell.y],
-            path: [
-              [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
-              [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
-              [p2.x / CELL_SIZE, p2.y / CELL_SIZE],
-              [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
-            ],
-          };
-        }
-        const p0 = new BezierPoint(50, 390, moved, true);
-        const p1 = new BezierPoint(150, 50, moved);
-        const p2 = new BezierPoint(250, 50, moved);
-        const p3 = new BezierPoint(350, 390, moved, true);
-
-        mcanvas.add(p0._inst, p1._inst, p2._inst, p3._inst);
-        let bezierPath = new fabric.Path(
-          `M ${p0._inst.left} ${p0._inst.top} C ${p1._inst.left} ${p1._inst.top}, ${p2._inst.left} ${p2._inst.top}, ${p3._inst.left} ${p3._inst.top}`,
-          {
-            fill: "",
-            stroke: "black",
-            strokeWidth: 2,
-            selectable: false,
-            objectCaching: false,
-          }
-        );
+        bezierPath.set({ path: pathData });
+        console.log(bezierPath);
+        mcanvas.renderAll();
         curCurve = {
-          cell: [cell.x, cell.y],
+          cell: [window._cell.x, window._cell.y],
           path: [
             [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
             [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
@@ -294,7 +260,42 @@
             [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
           ],
         };
-        mcanvas.add(bezierPath);
+      }
+      const mcanvas = new fabric.Canvas("editor-canvas");
+      const p0 = new BezierPoint(50, 390, moved, true);
+      const p1 = new BezierPoint(150, 50, moved);
+      const p2 = new BezierPoint(250, 50, moved);
+      const p3 = new BezierPoint(350, 390, moved, true);
+      mcanvas.add(p0._inst, p1._inst, p2._inst, p3._inst);
+      let bezierPath = new fabric.Path(
+        `M ${p0._inst.left} ${p0._inst.top} C ${p1._inst.left} ${p1._inst.top}, ${p2._inst.left} ${p2._inst.top}, ${p3._inst.left} ${p3._inst.top}`,
+        {
+          fill: "",
+          stroke: "black",
+          strokeWidth: 2,
+          selectable: false,
+          objectCaching: false,
+        }
+      );
+      curCurve = {
+        cell: [window._cell.x, window._cell.y],
+        path: [
+          [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
+          [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
+          [p2.x / CELL_SIZE, p2.y / CELL_SIZE],
+          [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
+        ],
+      };
+      mcanvas.add(bezierPath);
+      function openEditorModal(cell) {
+        window._cell = cell;
+        const modal = document.getElementById("editor-modal");
+
+        document.getElementById(
+          "cell-coords"
+        ).innerText = `${cell.x}, ${cell.y}`;
+        modal.style.display = "block";
+        modal.scrollIntoView({ behavior: "smooth", block: "center" });
       }
 
       function resizeCanvas() {
