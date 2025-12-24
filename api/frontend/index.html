@@ -197,24 +197,27 @@
         const modal = document.getElementById("editor-modal");
         const mcanvas = new fabric.Canvas("editor-canvas");
 
-        let bezierPath = new fabric.Path(
-          "M 0 200 C 100 100, 300 300, 400 200",
-          {
-            fill: "",
-            stroke: "black",
-            strokeWidth: 2,
-            selectable: false,
-          }
-        );
-        mcanvas.add(bezierPath);
-
         document.getElementById(
           "cell-coords"
         ).innerText = `${cell.x}, ${cell.y}`;
         modal.style.display = "block";
         function moved() {
-          const pathString = `M ${p0.left} ${p0.top} C ${p1.left} ${p1.top}, ${p2.left} ${p2.top}, ${p3.left} ${p3.top}`;
-          bezierPath.set({ path: new fabric.Path(pathString).path });
+          console.log(bezierPath);
+          const pathData = [
+            ["M", p0._inst.left, p0._inst.top],
+            [
+              "C",
+              p1._inst.left,
+              p1._inst.top,
+              p2._inst.left,
+              p2._inst.top,
+              p3._inst.left,
+              p3._inst.top,
+            ],
+          ];
+
+          bezierPath.set({ path: pathData });
+          console.log(bezierPath);
           mcanvas.renderAll();
         }
         const p0 = new BezierPoint(50, 350, moved);
@@ -223,6 +226,17 @@
         const p3 = new BezierPoint(350, 350, moved);
 
         mcanvas.add(p0._inst, p1._inst, p2._inst, p3._inst);
+        let bezierPath = new fabric.Path(
+          `M ${p0._inst.left} ${p0._inst.top} C ${p1._inst.left} ${p1._inst.top}, ${p2._inst.left} ${p2._inst.top}, ${p3._inst.left} ${p3._inst.top}`,
+          {
+            fill: "",
+            stroke: "black",
+            strokeWidth: 2,
+            selectable: false,
+            objectCaching: false,
+          }
+        );
+        mcanvas.add(bezierPath);
       }
     </script>
   </body>
