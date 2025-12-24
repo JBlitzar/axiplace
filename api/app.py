@@ -105,6 +105,7 @@ def add_command():
     command = data.get("command")
     if not command:
         return {"error": "No command provided"}
+    command = json.dumps(command)
 
     r.rpush(COMMAND_QUEUE_KEY, command)
 
