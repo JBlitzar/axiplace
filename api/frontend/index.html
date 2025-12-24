@@ -15,42 +15,39 @@
         display: block;
         margin: 0 auto;
       }
+
+      #stream-container {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        max-width: 800px;
+      }
+
+      #stream {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: all;
+        cursor: crosshair;
+        z-index: 300;
+      }
     </style>
   </head>
   <body>
     <h1>Thing</h1>
     <br />
     <center>
-      <div
-        class="container"
-        style="
-          position: relative;
-          display: inline-block;
-          width: 100%;
-          max-width: 800px;
-        "
-      >
-        <center>
-          <img
-            id="stream"
-            src=""
-            alt="Loading stream..."
-            style="width: 100%; height: auto; max-width: 800px"
-          />
-          <br />
-          <canvas
-            id="canvas"
-            style="
-              width: 100%;
-              height: auto;
-              max-width: 720px;
-              position: absolute;
-              top: 0;
-              left: 0;
-              cursor: crosshair;
-            "
-          ></canvas>
-        </center>
+      <div id="stream-container">
+        <img id="stream" src="" alt="Loading stream..." />
+        <canvas id="canvas"></canvas>
       </div>
       <div id="modal-overlay"></div>
       <div id="editor-modal">
@@ -60,7 +57,6 @@
         <button id="submit-curve">Submit</button>
         <button id="cancel-curve">Cancel</button>
       </div>
-      <button id="send">Send Command</button>
     </center>
 
     <script>
@@ -72,6 +68,7 @@
           const data = await resp.json();
           if (data.stream_url) {
             document.getElementById("stream").src = data.stream_url;
+            resizeCanvas();
           } else {
             console.error("No stream URL available:", data.error);
           }
@@ -81,31 +78,16 @@
       }
 
       loadStreamUrl();
-
-      document.getElementById("send").addEventListener("click", async () => {
-        const command = prompt("command: ");
-        if (!command) return;
-
-        let resp = await fetch(`${API_BASE}/add_command`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command }),
-        });
-        let data = await resp.json();
-        console.log(resp.status);
-        if (data.status != "success") {
-          alert(data.message || data.error);
-        } else {
-          alert("Command sent successfully!");
-        }
-      });
     </script>
 
     <script>
-      let GRID_W = 32;
-      let GRID_H = 16;
+      let GRID_W = 24;
+      let GRID_H = 18;
+      const streamContainer = document.getElementById("stream-container");
+      const stream = document.getElementById("stream");
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
+
       cur_width = canvas.clientWidth;
       canvas.width = cur_width;
       canvas.height = (cur_width * GRID_H) / GRID_W;
@@ -115,6 +97,12 @@
         this.x = x;
         this.y = y;
       }
+      window._redrawCells = function () {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const cell of grid) {
+          cell.draw(ctx);
+        }
+      };
       Cell.prototype.isInside = function (mx, my) {
         return (
           mx >= this.x * CELL_SIZE &&
@@ -124,6 +112,7 @@
         );
       };
       Cell.prototype.draw = function (ctx) {
+        console.log("drawing cell", this.x, this.y, CELL_SIZE);
         ctx.strokeStyle = "#ccc";
         ctx.strokeRect(
           this.x * CELL_SIZE,
@@ -138,12 +127,7 @@
           grid.push(new Cell(x, y));
         }
       }
-      Cell.redraw = function () {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        grid.forEach((cell) => cell.draw(ctx));
-      };
 
-      Cell.redraw();
       canvas.addEventListener("click", (e) => {
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
@@ -151,7 +135,7 @@
         for (const cell of grid) {
           if (cell.isInside(mx, my)) {
             openEditorModal(cell);
-            Cell.redraw();
+            window._redrawCells();
             break;
           }
         }
@@ -273,6 +257,22 @@
         );
         mcanvas.add(bezierPath);
       }
+
+      function resizeCanvas() {
+        const rect = stream.getBoundingClientRect();
+
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        CELL_SIZE = canvas.width / GRID_W;
+
+        window._redrawCells();
+      }
+
+      stream.addEventListener("load", resizeCanvas);
+      window.addEventListener("resize", resizeCanvas);
+
+      resizeCanvas();
     </script>
   </body>
 </html>
