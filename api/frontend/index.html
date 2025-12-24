@@ -5,7 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Axiplace | JBlitzar</title>
     <link rel="stylesheet" href="https://jblitzar.github.io/global.css" />
-    <link rel=icon href=https://jblitzar.github.io/favicon.png>
+    <link rel=icon href=https://jblitzar.github.io/favicon.png> '
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+    <style>
+      canvas {
+        border: 1px solid #ccc;
+        cursor: crosshair;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
   </head>
   <body>
     <h1>Thing</h1>
@@ -16,12 +26,23 @@
           id="stream"
           src=""
           alt="Loading stream..."
-          style="width: 100%; height: auto; max-width: 720px"
+          style="width: 100%; height: auto; max-width: 800px"
         />
       </center>
 
       <br />
-
+      <canvas
+        id="canvas"
+        style="width: 100%; height: auto; max-width: 720px"
+      ></canvas>
+      <div id="modal-overlay"></div>
+      <div id="editor-modal">
+        <h3>Draw Curve for Cell (<span id="cell-coords"></span>)</h3>
+        <canvas id="editor-canvas" width="400" height="400"></canvas>
+        <br />
+        <button id="submit-curve">Submit</button>
+        <button id="cancel-curve">Cancel</button>
+      </div>
       <button id="send">Send Command</button>
     </div>
     <script>
@@ -60,6 +81,149 @@
           alert("Command sent successfully!");
         }
       });
+    </script>
+
+    <script>
+      let GRID_W = 32;
+      let GRID_H = 16;
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      cur_width = canvas.clientWidth;
+      canvas.width = cur_width;
+      canvas.height = (cur_width * GRID_H) / GRID_W;
+      CELL_SIZE = canvas.width / GRID_W;
+      function Bezier(p0, p1, p2, p3) {
+        this.p0 = p0;
+        this.p1 = p1;
+        this.p2 = p2;
+        this.p3 = p3;
+      }
+      Bezier.prototype.draw = function (ctx) {
+        ctx.beginPath();
+        ctx.moveTo(this.p0.x, this.p0.y);
+        ctx.bezierCurveTo(
+          this.p1.x,
+          this.p1.y,
+          this.p2.x,
+          this.p2.y,
+          this.p3.x,
+          this.p3.y
+        );
+        ctx.stroke();
+      };
+      Bezier.prototype.toJSON = function () {
+        return {
+          p0: this.p0,
+          p1: this.p1,
+          p2: this.p2,
+          p3: this.p3,
+        };
+      };
+
+      function Cell(x, y) {
+        this.x = x;
+        this.y = y;
+        this.bezier = null;
+      }
+      Cell.prototype.isInside = function (mx, my) {
+        return (
+          mx >= this.x * CELL_SIZE &&
+          mx < (this.x + 1) * CELL_SIZE &&
+          my >= this.y * CELL_SIZE &&
+          my < (this.y + 1) * CELL_SIZE
+        );
+      };
+      Cell.prototype.draw = function (ctx) {
+        ctx.strokeStyle = "#ccc";
+        ctx.strokeRect(
+          this.x * CELL_SIZE,
+          this.y * CELL_SIZE,
+          CELL_SIZE,
+          CELL_SIZE
+        );
+        if (this.bezier) {
+          this.bezier.draw(ctx);
+        }
+      };
+      const grid = [];
+      for (let y = 0; y < GRID_H; y++) {
+        for (let x = 0; x < GRID_W; x++) {
+          grid.push(new Cell(x, y));
+        }
+      }
+      Cell.redraw = function () {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        grid.forEach((cell) => cell.draw(ctx));
+      };
+
+      Cell.redraw();
+      canvas.addEventListener("click", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        for (const cell of grid) {
+          if (cell.isInside(mx, my)) {
+            openEditorModal(cell);
+            Cell.redraw();
+            break;
+          }
+        }
+      });
+
+      function BezierPoint(x, y, movingCallback = null) {
+        this.x = x;
+        this.y = y;
+        this._inst = new fabric.Circle({
+          radius: 5,
+          fill: "red",
+          left: x,
+          top: y,
+          hasControls: false,
+          hasBorders: false,
+          selectable: true,
+          lockRotation: true,
+          lockScalingX: true,
+          lockScalingY: true,
+        });
+
+        this._inst.on("moving", (e) => {
+          this.x = this._inst.left;
+          this.y = this._inst.top;
+          //   console.log(this._inst);
+          if (movingCallback) movingCallback();
+        });
+      }
+      function openEditorModal(cell) {
+        const modal = document.getElementById("editor-modal");
+        const mcanvas = new fabric.Canvas("editor-canvas");
+
+        let bezierPath = new fabric.Path(
+          "M 0 200 C 100 100, 300 300, 400 200",
+          {
+            fill: "",
+            stroke: "black",
+            strokeWidth: 2,
+            selectable: false,
+          }
+        );
+        mcanvas.add(bezierPath);
+
+        document.getElementById(
+          "cell-coords"
+        ).innerText = `${cell.x}, ${cell.y}`;
+        modal.style.display = "block";
+        function moved() {
+          const pathString = `M ${p0.left} ${p0.top} C ${p1.left} ${p1.top}, ${p2.left} ${p2.top}, ${p3.left} ${p3.top}`;
+          bezierPath.set({ path: new fabric.Path(pathString).path });
+          mcanvas.renderAll();
+        }
+        const p0 = new BezierPoint(50, 350, moved);
+        const p1 = new BezierPoint(150, 50, moved);
+        const p2 = new BezierPoint(250, 50, moved);
+        const p3 = new BezierPoint(350, 350, moved);
+
+        mcanvas.add(p0._inst, p1._inst, p2._inst, p3._inst);
+      }
     </script>
   </body>
 </html>
