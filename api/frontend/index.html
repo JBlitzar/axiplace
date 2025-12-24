@@ -212,10 +212,10 @@
         });
       }
       document.getElementById("submit-curve").addEventListener("click", () => {
-        fetch(`${API_BASE}/submit_curve`, {
+        fetch(`${API_BASE}/add_command`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(curCurve),
+          body: JSON.stringify({ command: curCurve }),
         })
           .then((response) => response.json())
           .then((data) => {
