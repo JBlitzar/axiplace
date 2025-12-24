@@ -20,21 +20,38 @@
   <body>
     <h1>Thing</h1>
     <br />
-    <div class="container">
-      <center>
-        <img
-          id="stream"
-          src=""
-          alt="Loading stream..."
-          style="width: 100%; height: auto; max-width: 800px"
-        />
-      </center>
-
-      <br />
-      <canvas
-        id="canvas"
-        style="width: 100%; height: auto; max-width: 720px"
-      ></canvas>
+    <center>
+      <div
+        class="container"
+        style="
+          position: relative;
+          display: inline-block;
+          width: 100%;
+          max-width: 800px;
+        "
+      >
+        <center>
+          <img
+            id="stream"
+            src=""
+            alt="Loading stream..."
+            style="width: 100%; height: auto; max-width: 800px"
+          />
+          <br />
+          <canvas
+            id="canvas"
+            style="
+              width: 100%;
+              height: auto;
+              max-width: 720px;
+              position: absolute;
+              top: 0;
+              left: 0;
+              cursor: crosshair;
+            "
+          ></canvas>
+        </center>
+      </div>
       <div id="modal-overlay"></div>
       <div id="editor-modal">
         <h3>Draw Curve for Cell (<span id="cell-coords"></span>)</h3>
@@ -44,7 +61,8 @@
         <button id="cancel-curve">Cancel</button>
       </div>
       <button id="send">Send Command</button>
-    </div>
+    </center>
+
     <script>
       const API_BASE = "https://axiplace.vercel.app";
 
@@ -92,38 +110,10 @@
       canvas.width = cur_width;
       canvas.height = (cur_width * GRID_H) / GRID_W;
       CELL_SIZE = canvas.width / GRID_W;
-      function Bezier(p0, p1, p2, p3) {
-        this.p0 = p0;
-        this.p1 = p1;
-        this.p2 = p2;
-        this.p3 = p3;
-      }
-      Bezier.prototype.draw = function (ctx) {
-        ctx.beginPath();
-        ctx.moveTo(this.p0.x, this.p0.y);
-        ctx.bezierCurveTo(
-          this.p1.x,
-          this.p1.y,
-          this.p2.x,
-          this.p2.y,
-          this.p3.x,
-          this.p3.y
-        );
-        ctx.stroke();
-      };
-      Bezier.prototype.toJSON = function () {
-        return {
-          p0: this.p0,
-          p1: this.p1,
-          p2: this.p2,
-          p3: this.p3,
-        };
-      };
 
       function Cell(x, y) {
         this.x = x;
         this.y = y;
-        this.bezier = null;
       }
       Cell.prototype.isInside = function (mx, my) {
         return (
@@ -141,9 +131,6 @@
           CELL_SIZE,
           CELL_SIZE
         );
-        if (this.bezier) {
-          this.bezier.draw(ctx);
-        }
       };
       const grid = [];
       for (let y = 0; y < GRID_H; y++) {
