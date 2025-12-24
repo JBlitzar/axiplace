@@ -1,5 +1,5 @@
-[ ] proper styling
-[ ] all features
+[~] proper styling
+[x] all features
 [x] livestream
 [x] real server URL
-[ ] real deployment (caddyfile)
+[x] real deployment (caddyfile)

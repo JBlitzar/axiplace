@@ -1,6 +1,6 @@
-[ ] client serving and client features, ofc
+[x] client serving and client features, ofc
+
 - [~] web interface
-- [ ] proper cors once deploy
-[x] commands queue
-[x] stream "auth"
-[ ] real deployment (systemd + caddyfile)
+  [x] commands queue
+  [x] stream "auth"
+  [~x] real deployment (systemd + caddyfile)
