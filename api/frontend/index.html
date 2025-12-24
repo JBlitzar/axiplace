@@ -170,7 +170,7 @@
         }
       });
 
-      function BezierPoint(x, y, movingCallback = null) {
+      function BezierPoint(x, y, movingCallback = null, edgesOnly = false) {
         this.x = x;
         this.y = y;
         this._inst = new fabric.Circle({
@@ -185,8 +185,56 @@
           lockScalingX: true,
           lockScalingY: true,
         });
+        this.edgesOnly = edgesOnly;
+
+        function _clamp(value, min, max) {
+          return Math.min(Math.max(value, min), max);
+        }
 
         this._inst.on("moving", (e) => {
+          const canvasWidth = this._inst.canvas.width;
+          const canvasHeight = this._inst.canvas.height;
+          const radius = this._inst.radius;
+
+          this._inst.left = _clamp(
+            this._inst.left,
+            radius,
+            canvasWidth - radius
+          );
+          this._inst.top = _clamp(
+            this._inst.top,
+            radius,
+            canvasHeight - radius
+          );
+
+          if (this.edgesOnly) {
+            let xPass =
+              this._inst.left > canvasWidth - radius ||
+              this._inst.left < radius;
+            let yPass =
+              this._inst.top > canvasHeight - radius || this._inst.top < radius;
+
+            // both pass == corner, one pass == edge
+            // no pass == violation! Go to closest edge
+            if (!xPass && !yPass) {
+              // ugh violates DRY but whatever
+              let dl = this._inst.left - radius;
+              let dr = canvasWidth - radius - this._inst.left;
+              let dt = this._inst.top - radius;
+              let db = canvasHeight - radius - this._inst.top;
+              let minDist = Math.min(dl, dr, dt, db);
+              if (minDist === dl) {
+                this._inst.left = radius;
+              } else if (minDist === dr) {
+                this._inst.left = canvasWidth - radius;
+              } else if (minDist === dt) {
+                this._inst.top = radius;
+              } else if (minDist === db) {
+                this._inst.top = canvasHeight - radius;
+              }
+            }
+          }
+
           this.x = this._inst.left;
           this.y = this._inst.top;
           //   console.log(this._inst);
@@ -220,10 +268,10 @@
           console.log(bezierPath);
           mcanvas.renderAll();
         }
-        const p0 = new BezierPoint(50, 350, moved);
+        const p0 = new BezierPoint(50, 390, moved, true);
         const p1 = new BezierPoint(150, 50, moved);
         const p2 = new BezierPoint(250, 50, moved);
-        const p3 = new BezierPoint(350, 350, moved);
+        const p3 = new BezierPoint(350, 390, moved, true);
 
         mcanvas.add(p0._inst, p1._inst, p2._inst, p3._inst);
         let bezierPath = new fabric.Path(
