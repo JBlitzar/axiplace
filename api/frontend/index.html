@@ -95,6 +95,7 @@
       function Cell(x, y) {
         this.x = x;
         this.y = y;
+        this.selected = false;
       }
       window._redrawCells = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -119,6 +120,22 @@
           CELL_SIZE,
           CELL_SIZE
         );
+        if (this.selected) {
+          ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
+          ctx.fillRect(
+            this.x * CELL_SIZE,
+            this.y * CELL_SIZE,
+            CELL_SIZE,
+            CELL_SIZE
+          );
+        }
+      };
+      Cell.prototype.setSelected = function (grid) {
+        for (const cell of grid) {
+          cell.selected = false;
+        }
+        this.selected = true;
+        window._redrawCells();
       };
       const grid = [];
       for (let y = 0; y < GRID_H; y++) {
@@ -135,6 +152,8 @@
         for (const cell of grid) {
           if (cell.isInside(mx, my)) {
             openEditorModal(cell);
+            cell.setSelected(grid);
+            window._cell = cell;
             window._redrawCells();
             break;
           }
@@ -145,7 +164,7 @@
         this.x = x;
         this.y = y;
         this._inst = new fabric.Circle({
-          radius: 5,
+          radius: 10,
           fill: "red",
           left: x,
           top: y,
@@ -223,6 +242,9 @@
             if (data.status === "success") {
               alert("Curve submitted successfully!");
               document.getElementById("editor-modal").style.display = "none";
+              for (const cell of grid) {
+                cell.selected = false;
+              }
             } else {
               alert(data.message || data.error || "Failed to submit curve");
             }
