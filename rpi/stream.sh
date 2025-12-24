@@ -1,4 +1,17 @@
 #!/bin/bash
+
+cleanup() {
+  echo "Cleaning up..."
+  echo "killing cf"
+  kill "$CF_PID" 2>/dev/null
+  echo "killing uv"
+  kill "$UV_PID" 2>/dev/null
+  echo "exited"
+  exit 0
+}
+
+trap cleanup SIGINT SIGTERM
+
 uv run client.py &
 UV_PID=$!
 
@@ -12,9 +25,7 @@ CF_PID=$!
 while [ ! -s "$logfile" ]; do sleep 0.5; done
 sleep 10
 
-
 url=$(grep -Eo 'https://[^[:space:]]+\.trycloudflare\.com' /tmp/tunnel.log | head -n 1)
-
 
 curl -X POST https://axiplace.vercel.app/update-stream-url \
   -H "Content-Type: application/json" \
@@ -22,8 +33,6 @@ curl -X POST https://axiplace.vercel.app/update-stream-url \
 
 echo "Stream available at: $url"
 
-
 wait
 
-kill "$CF_PID"
-kill "$UV_PID"
+cleanup
