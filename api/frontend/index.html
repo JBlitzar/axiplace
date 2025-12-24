@@ -55,7 +55,6 @@
         <canvas id="editor-canvas" width="400" height="400"></canvas>
         <br />
         <button id="submit-curve">Submit</button>
-        <button id="cancel-curve">Cancel</button>
       </div>
     </center>
 
@@ -212,6 +211,27 @@
           if (movingCallback) movingCallback();
         });
       }
+      document.getElementById("submit-curve").addEventListener("click", () => {
+        fetch(`${API_BASE}/submit_curve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(curCurve),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              alert("Curve submitted successfully!");
+              document.getElementById("editor-modal").style.display = "none";
+            } else {
+              alert(data.message || data.error || "Failed to submit curve");
+            }
+          })
+          .catch((err) => {
+            console.error("Error submitting curve:", err);
+            alert("Failed to submit curve");
+          });
+      });
+      let curCurve = null;
       function openEditorModal(cell) {
         const modal = document.getElementById("editor-modal");
         const mcanvas = new fabric.Canvas("editor-canvas");
@@ -238,6 +258,15 @@
           bezierPath.set({ path: pathData });
           console.log(bezierPath);
           mcanvas.renderAll();
+          curCurve = {
+            cell: [cell.x, cell.y],
+            path: [
+              [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
+              [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
+              [p2.x / CELL_SIZE, p2.y / CELL_SIZE],
+              [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
+            ],
+          };
         }
         const p0 = new BezierPoint(50, 390, moved, true);
         const p1 = new BezierPoint(150, 50, moved);
@@ -255,6 +284,15 @@
             objectCaching: false,
           }
         );
+        curCurve = {
+          cell: [cell.x, cell.y],
+          path: [
+            [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
+            [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
+            [p2.x / CELL_SIZE, p2.y / CELL_SIZE],
+            [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
+          ],
+        };
         mcanvas.add(bezierPath);
       }
 
