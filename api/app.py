@@ -1,10 +1,12 @@
 import time
 from flask import Flask, Response, json, request
+
 import dotenv
 import os
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 import redis
+from flask import send_from_directory
 
 dotenv.load_dotenv()
 
@@ -110,7 +112,7 @@ def add_command():
 
 @app.route("/")
 def index():
-    return "helo world"
+    return send_from_directory("frontend", "index.html")
 
 
 if __name__ == "__main__":
