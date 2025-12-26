@@ -19,17 +19,11 @@
         margin: 0 auto;
       }
 
-      .stream-wrapper {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-      }
-
       #stream-container {
         position: relative;
         display: inline-block;
+        width: 100%;
         min-width: 600px;
-        flex-shrink: 0;
       }
 
       #stream {
@@ -54,11 +48,9 @@
     <h1>Thing</h1>
     <br />
     <center>
-      <div class="stream-wrapper">
-        <div id="stream-container">
-          <img id="stream" src="" alt="Loading stream..." />
-          <canvas id="canvas"></canvas>
-        </div>
+      <div id="stream-container">
+        <img id="stream" src="" alt="Loading stream..." />
+        <canvas id="canvas"></canvas>
       </div>
 
       <div id="editor-modal" style="display: none">
