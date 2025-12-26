@@ -325,6 +325,7 @@
         ).innerText = `${cell.x}, ${cell.y}`;
         modal.style.display = "block";
         modal.scrollIntoView({ behavior: "smooth", block: "center" });
+        moved();
       }
 
       function resizeCanvas() {
