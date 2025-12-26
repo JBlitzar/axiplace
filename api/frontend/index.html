@@ -9,6 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
     <style>
+        body {
+            overflow-x: hidden;
+        }
       canvas {
         border: 1px solid #ccc;
         cursor: crosshair;
@@ -20,7 +23,7 @@
         position: relative;
         display: inline-block;
         width: 100%;
-        max-width: 800px;
+        min-width: 500px;
       }
 
       #stream {
@@ -82,15 +85,27 @@
     <script>
       let GRID_W = 32;
       let GRID_H = 18;
+      
+
+      const GRID_CONFIG = {
+
+        offsetX: 0.1,
+        offsetY: 0.1,
+
+        width: 0.8,
+        height: 0.8,
+      };
+
       const streamContainer = document.getElementById("stream-container");
       const stream = document.getElementById("stream");
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
 
-      cur_width = canvas.clientWidth;
-      canvas.width = cur_width;
-      canvas.height = (cur_width * GRID_H) / GRID_W;
-      CELL_SIZE = canvas.width / GRID_W;
+      let CELL_SIZE = 0;
+      let GRID_OFFSET_X = 0;
+      let GRID_OFFSET_Y = 0;
+      let GRID_WIDTH_PX = 0;
+      let GRID_HEIGHT_PX = 0;
 
       function Cell(x, y) {
         this.x = x;
@@ -104,30 +119,24 @@
         }
       };
       Cell.prototype.isInside = function (mx, my) {
+        const cellX = GRID_OFFSET_X + this.x * CELL_SIZE;
+        const cellY = GRID_OFFSET_Y + this.y * CELL_SIZE;
         return (
-          mx >= this.x * CELL_SIZE &&
-          mx < (this.x + 1) * CELL_SIZE &&
-          my >= this.y * CELL_SIZE &&
-          my < (this.y + 1) * CELL_SIZE
+          mx >= cellX &&
+          mx < cellX + CELL_SIZE &&
+          my >= cellY &&
+          my < cellY + CELL_SIZE
         );
       };
       Cell.prototype.draw = function (ctx) {
-        console.log("drawing cell", this.x, this.y, CELL_SIZE);
+        const cellX = GRID_OFFSET_X + this.x * CELL_SIZE;
+        const cellY = GRID_OFFSET_Y + this.y * CELL_SIZE;
+        
         ctx.strokeStyle = "#ccc";
-        ctx.strokeRect(
-          this.x * CELL_SIZE,
-          this.y * CELL_SIZE,
-          CELL_SIZE,
-          CELL_SIZE
-        );
+        ctx.strokeRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
         if (this.selected) {
           ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
-          ctx.fillRect(
-            this.x * CELL_SIZE,
-            this.y * CELL_SIZE,
-            CELL_SIZE,
-            CELL_SIZE
-          );
+          ctx.fillRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
         }
       };
       Cell.prototype.setSelected = function (grid) {
@@ -326,7 +335,14 @@
         canvas.width = rect.width;
         canvas.height = rect.height;
 
-        CELL_SIZE = canvas.width / GRID_W;
+
+        GRID_OFFSET_X = rect.width * GRID_CONFIG.offsetX;
+        GRID_OFFSET_Y = rect.height * GRID_CONFIG.offsetY;
+        GRID_WIDTH_PX = rect.width * GRID_CONFIG.width;
+        GRID_HEIGHT_PX = rect.height * GRID_CONFIG.height;
+
+
+        CELL_SIZE = Math.min(GRID_WIDTH_PX / GRID_W, GRID_HEIGHT_PX / GRID_H);
 
         window._redrawCells();
       }
