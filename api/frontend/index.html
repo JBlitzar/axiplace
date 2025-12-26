@@ -283,10 +283,10 @@
         curCurve = {
           cell: [window._cell.x, window._cell.y],
           path: [
-            [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
-            [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
-            [p2.x / CELL_SIZE, p2.y / CELL_SIZE],
-            [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
+            [p0.x / mcanvas.width, p0.y / mcanvas.height],
+            [p1.x / mcanvas.width, p1.y / mcanvas.height],
+            [p2.x / mcanvas.width, p2.y / mcanvas.height],
+            [p3.x / mcanvas.width, p3.y / mcanvas.height],
           ],
         };
       }
@@ -309,10 +309,10 @@
       curCurve = {
         cell: [window._cell.x, window._cell.y],
         path: [
-          [p0.x / CELL_SIZE, p0.y / CELL_SIZE],
-          [p1.x / CELL_SIZE, p1.y / CELL_SIZE],
-          [p2.x / CELL_SIZE, p2.y / CELL_SIZE],
-          [p3.x / CELL_SIZE, p3.y / CELL_SIZE],
+          [p0.x / mcanvas.width, p0.y / mcanvas.height],
+          [p1.x / mcanvas.width, p1.y / mcanvas.height],
+          [p2.x / mcanvas.width, p2.y / mcanvas.height],
+          [p3.x / mcanvas.width, p3.y / mcanvas.height],
         ],
       };
       mcanvas.add(bezierPath);

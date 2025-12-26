@@ -5,6 +5,7 @@ import time
 import requests
 import cv2
 import numpy as np
+from draw import bezier
 
 app = Flask(__name__)
 
@@ -17,6 +18,15 @@ frame_ready = threading.Event()
 def fake_callback(c):  # ts had better be blocking upon implementation
     print(f"Fake callback: {c}")
 
+def real_callback(c):
+    print(f"Executing command: {c}")
+    try:
+        cell_x = c["cell"][0]
+        cell_y = c["cell"][1]
+        params = c["params"]
+        bezier(cell_x, cell_y, params)
+    except Exception as e:
+        print("Error executing command:", e)
 
 API_BASE = "https://axiplace.vercel.app"
 
@@ -45,7 +55,7 @@ def poll():
         if resp.status_code == 200:
             val = resp.json()
             if val.get("command"):
-                fake_callback(val["command"])
+                real_callback(val["command"])
                 requests.post(f"{API_BASE}/command_complete", json={"status": "done"})
     except Exception as e:
         print("Polling error:", e)
