@@ -2,6 +2,8 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "flask",
+#     "numpy",
+#     "opencv-python",
 #     "requests",
 # ]
 # ///
@@ -10,6 +12,8 @@ import subprocess
 import threading
 import time
 import requests
+import cv2
+import numpy as np
 
 app = Flask(__name__)
 
@@ -24,6 +28,24 @@ def fake_callback(c):  # ts had better be blocking upon implementation
 
 
 API_BASE = "https://axiplace.vercel.app"
+
+
+def unskew(img):
+    """ul 714 156
+    ur 2795 156
+    dl 622 1790
+    dr 2831 1790
+    should be:
+    ul 714 156
+    ur 2795 156
+    dl 714 1790
+    dr 2795 1790"""
+    h, w = img.shape[:2]
+    src_pts = np.float32([[714, 156], [2795, 156], [622, 1790], [2831, 1790]])
+    dst_pts = np.float32([[714, 156], [2795, 156], [714, 1790], [2795, 1790]])
+    matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
+    unskewed = cv2.warpPerspective(img, matrix, (w, h))
+    return unskewed
 
 
 def poll():
@@ -95,6 +117,13 @@ def generate_frames():
         with frame_lock:
             frame = current_frame
             frame_ready.clear()
+
+        frame_array = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
+
+        unskewed_frame = unskew(frame_array)
+
+        _, encoded_frame = cv2.imencode(".jpg", unskewed_frame)
+        frame = encoded_frame.tobytes()
 
         yield (
             b"--frame\r\n"
