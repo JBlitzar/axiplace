@@ -9,9 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
     <style>
-      body {
-        overflow-x: hidden;
-      }
       canvas {
         border: 1px solid #ccc;
         cursor: crosshair;
@@ -283,10 +280,10 @@
         curCurve = {
           cell: [GRID_W - window._cell.x - 1, GRID_H - window._cell.y - 1],
           path: [
-            [1- p0.x / mcanvas.width, 1- p0.y / mcanvas.height],
-            [1- p1.x / mcanvas.width, 1- p1.y / mcanvas.height],
-            [1- p2.x / mcanvas.width, 1- p2.y / mcanvas.height],
-            [1- p3.x / mcanvas.width, 1- p3.y / mcanvas.height],
+            [1 - p0.x / mcanvas.width, 1 - p0.y / mcanvas.height],
+            [1 - p1.x / mcanvas.width, 1 - p1.y / mcanvas.height],
+            [1 - p2.x / mcanvas.width, 1 - p2.y / mcanvas.height],
+            [1 - p3.x / mcanvas.width, 1 - p3.y / mcanvas.height],
           ],
         };
       }
@@ -307,14 +304,14 @@
         }
       );
       curCurve = {
-          cell: [GRID_W - window._cell.x - 1, GRID_H - window._cell.y - 1],
-          path: [
-            [1- p0.x / mcanvas.width, 1- p0.y / mcanvas.height],
-            [1- p1.x / mcanvas.width, 1- p1.y / mcanvas.height],
-            [1- p2.x / mcanvas.width, 1- p2.y / mcanvas.height],
-            [1- p3.x / mcanvas.width, 1- p3.y / mcanvas.height],
-          ],
-        };
+        cell: [GRID_W - window._cell.x - 1, GRID_H - window._cell.y - 1],
+        path: [
+          [1 - p0.x / mcanvas.width, 1 - p0.y / mcanvas.height],
+          [1 - p1.x / mcanvas.width, 1 - p1.y / mcanvas.height],
+          [1 - p2.x / mcanvas.width, 1 - p2.y / mcanvas.height],
+          [1 - p3.x / mcanvas.width, 1 - p3.y / mcanvas.height],
+        ],
+      };
       mcanvas.add(bezierPath);
       function openEditorModal(cell) {
         window._cell = cell;
