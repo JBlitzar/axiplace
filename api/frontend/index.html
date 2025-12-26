@@ -9,9 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
     <style>
-        body {
-            overflow-x: hidden;
-        }
+      body {
+        overflow-x: hidden;
+      }
       canvas {
         border: 1px solid #ccc;
         cursor: crosshair;
@@ -23,7 +23,7 @@
         position: relative;
         display: inline-block;
         width: 100%;
-        min-width: 500px;
+        min-width: 600px;
       }
 
       #stream {
@@ -83,17 +83,15 @@
     </script>
 
     <script>
-      let GRID_W = 32;
-      let GRID_H = 18;
-      
+      let GRID_W = 22;
+      let GRID_H = 17;
 
       const GRID_CONFIG = {
+        offsetX: 0.18,
+        offsetY: 0.05,
 
-        offsetX: 0.1,
-        offsetY: 0.1,
-
-        width: 0.8,
-        height: 0.8,
+        width: 0.46,
+        height: 1,
       };
 
       const streamContainer = document.getElementById("stream-container");
@@ -131,7 +129,7 @@
       Cell.prototype.draw = function (ctx) {
         const cellX = GRID_OFFSET_X + this.x * CELL_SIZE;
         const cellY = GRID_OFFSET_Y + this.y * CELL_SIZE;
-        
+
         ctx.strokeStyle = "#ccc";
         ctx.strokeRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
         if (this.selected) {
@@ -335,12 +333,10 @@
         canvas.width = rect.width;
         canvas.height = rect.height;
 
-
         GRID_OFFSET_X = rect.width * GRID_CONFIG.offsetX;
         GRID_OFFSET_Y = rect.height * GRID_CONFIG.offsetY;
         GRID_WIDTH_PX = rect.width * GRID_CONFIG.width;
         GRID_HEIGHT_PX = rect.height * GRID_CONFIG.height;
-
 
         CELL_SIZE = Math.min(GRID_WIDTH_PX / GRID_W, GRID_HEIGHT_PX / GRID_H);
 
