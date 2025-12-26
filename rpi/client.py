@@ -49,13 +49,13 @@ def camera_thread():
             "--codec",
             "mjpeg",
             "--width",
-            "640",
+            "1920",
             "--height",
-            "480",
+            "1080",
             "--framerate",
-            "30",  # Higher FPS
+            "30",
             "--denoise",
-            "off",  # Disable processing
+            "off",
             "--awb",
             "auto",
             "-o",
