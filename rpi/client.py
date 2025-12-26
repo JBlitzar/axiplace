@@ -66,7 +66,7 @@ def camera_thread():
             "--height",
             "1080",
             "--framerate",
-            "30",
+            "15",
             "--denoise",
             "off",
             "--awb",
@@ -103,17 +103,25 @@ def camera_thread():
 
 
 def generate_frames():
+
     while True:
+        t0 = time.time()
         frame_ready.wait()
+        t1 = time.time()
         with frame_lock:
             frame = current_frame
             frame_ready.clear()
-
+        t2 = time.time()
+        
         frame_array = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
+        t3 = time.time()
         frame_array = cv2.resize(frame_array, (960, 540), interpolation=cv2.INTER_AREA)
+
+        t4 = time.time()
 
 
         unskewed_frame = unskew(frame_array)
+        t5 = time.time()
 
         _, encoded_frame = cv2.imencode(
             ".jpg", 
@@ -121,6 +129,9 @@ def generate_frames():
             [cv2.IMWRITE_JPEG_QUALITY, 75]
         )
         frame = encoded_frame.tobytes()
+        t6 = time.time()
+
+        # print(f"Wait: {t1 - t0:.3f}s, Lock: {t2 - t1:.3f}s, Decode: {t3 - t2:.3f}s, Resize: {t4 - t3:.3f}s, Unskew: {t5 - t4:.3f}s, Encode: {t6 - t5:.3f}s")
 
         yield (
             b"--frame\r\n"
