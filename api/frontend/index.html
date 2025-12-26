@@ -39,6 +39,14 @@
         cursor: crosshair;
         z-index: 300;
       }
+
+      /* Mobile: crop to show only the grid area */
+      @media (max-width: 599px) {
+        #stream-container {
+          min-width: unset;
+          overflow: hidden;
+        }
+      }
     </style>
   </head>
   <body>
@@ -326,15 +334,63 @@
       }
 
       function resizeCanvas() {
-        const rect = stream.getBoundingClientRect();
+        const isMobile = window.innerWidth < 600;
 
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        if (isMobile && stream.naturalWidth > 0) {
+          // Mobile: crop to show only the grid area
+          // Used AI to code this block because I'm lazy and weird math + css is hard
+          const containerWidth = streamContainer.offsetWidth;
 
-        GRID_OFFSET_X = rect.width * GRID_CONFIG.offsetX;
-        GRID_OFFSET_Y = rect.height * GRID_CONFIG.offsetY;
-        GRID_WIDTH_PX = rect.width * GRID_CONFIG.width;
-        GRID_HEIGHT_PX = rect.height * GRID_CONFIG.height;
+          const scaledImageWidth = containerWidth / GRID_CONFIG.width;
+          const scale = scaledImageWidth / stream.naturalWidth;
+          const scaledImageHeight = stream.naturalHeight * scale;
+
+          const offsetX = -scaledImageWidth * GRID_CONFIG.offsetX;
+          const offsetY = -scaledImageHeight * GRID_CONFIG.offsetY;
+
+          const gridHeightPx = scaledImageHeight * GRID_CONFIG.height;
+
+          streamContainer.style.height = gridHeightPx + "px";
+
+          stream.style.width = scaledImageWidth + "px";
+          stream.style.height = scaledImageHeight + "px";
+          stream.style.position = "relative";
+          stream.style.left = offsetX + "px";
+          stream.style.top = offsetY + "px";
+
+          canvas.width = containerWidth;
+          canvas.height = gridHeightPx;
+          canvas.style.width = containerWidth + "px";
+          canvas.style.height = gridHeightPx + "px";
+          canvas.style.left = "0";
+          canvas.style.top = "0";
+
+          GRID_OFFSET_X = 0;
+          GRID_OFFSET_Y = 0;
+          GRID_WIDTH_PX = containerWidth;
+          GRID_HEIGHT_PX = gridHeightPx;
+        } else {
+          stream.style.width = "100%";
+          stream.style.height = "auto";
+          stream.style.position = "";
+          stream.style.left = "";
+          stream.style.top = "";
+          streamContainer.style.height = "";
+          canvas.style.width = "";
+          canvas.style.height = "";
+          canvas.style.left = "";
+          canvas.style.top = "";
+
+          const rect = stream.getBoundingClientRect();
+
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+
+          GRID_OFFSET_X = rect.width * GRID_CONFIG.offsetX;
+          GRID_OFFSET_Y = rect.height * GRID_CONFIG.offsetY;
+          GRID_WIDTH_PX = rect.width * GRID_CONFIG.width;
+          GRID_HEIGHT_PX = rect.height * GRID_CONFIG.height;
+        }
 
         CELL_SIZE = Math.min(GRID_WIDTH_PX / GRID_W, GRID_HEIGHT_PX / GRID_H);
 
