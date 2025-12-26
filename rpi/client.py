@@ -1,12 +1,3 @@
-# /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#     "flask",
-#     "numpy",
-#     "opencv-python",
-#     "requests",
-# ]
-# ///
 from flask import Flask, Response
 import subprocess
 import threading
@@ -29,23 +20,23 @@ def fake_callback(c):  # ts had better be blocking upon implementation
 
 API_BASE = "https://axiplace.vercel.app"
 
+"""ul 714 156
+ur 2795 156
+dl 622 1790
+dr 2831 1790
+should be:
+ul 714 156
+ur 2795 156
+dl 714 1790
+dr 2795 1790"""
 
+src_pts = np.float32([[714, 156], [2795, 156], [622, 1790], [2831, 1790]]) * 960/4608
+dst_pts = np.float32([[714, 156], [2795, 156], [714, 1790], [2795, 1790]]) * 960/4608
+UNSKEW_MATRIX = cv2.getPerspectiveTransform(src_pts, dst_pts)
 def unskew(img):
-    """ul 714 156
-    ur 2795 156
-    dl 622 1790
-    dr 2831 1790
-    should be:
-    ul 714 156
-    ur 2795 156
-    dl 714 1790
-    dr 2795 1790"""
     h, w = img.shape[:2]
-    src_pts = np.float32([[714, 156], [2795, 156], [622, 1790], [2831, 1790]])
-    dst_pts = np.float32([[714, 156], [2795, 156], [714, 1790], [2795, 1790]])
-    matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
-    unskewed = cv2.warpPerspective(img, matrix, (w, h))
-    return unskewed
+    
+    return cv2.warpPerspective(img, UNSKEW_MATRIX, (w, h), flags=cv2.INTER_NEAREST)
 
 
 def poll():
@@ -119,10 +110,16 @@ def generate_frames():
             frame_ready.clear()
 
         frame_array = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
+        frame_array = cv2.resize(frame_array, (960, 540), interpolation=cv2.INTER_AREA)
+
 
         unskewed_frame = unskew(frame_array)
 
-        _, encoded_frame = cv2.imencode(".jpg", unskewed_frame)
+        _, encoded_frame = cv2.imencode(
+            ".jpg", 
+            unskewed_frame, 
+            [cv2.IMWRITE_JPEG_QUALITY, 75]
+        )
         frame = encoded_frame.tobytes()
 
         yield (
