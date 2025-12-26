@@ -6,6 +6,11 @@ cleanup() {
   kill "$CF_PID" 2>/dev/null
   echo "killing uv"
   kill "$UV_PID" 2>/dev/null
+  echo "axi off, up"
+  axi goto 0 0
+  axi off
+  axi up
+
   echo "exited"
   exit 0
 }

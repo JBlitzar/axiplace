@@ -26,13 +26,19 @@ def bezier(cell_x, cell_y, params):
     x2, y2 = params[1]
     x3, y3 = params[2]
     x4, y4 = params[3]
-    if any(v is None for v in params):
+    flattened = [x1, y1, x2, y2, x3, y3, x4, y4]
+    if any(v is None for v in flattened):
         return
-    if any(not (0 <= v <= 1) for v in params):
+    if any(not (0 <= v <= 1) for v in flattened):
         return
-    ad.pendown()
+    ad.penup()
     points = 100
+    flag = False
+    
     for t in np.linspace(0, 1, points):
+        if not flag:
+            flag = True
+            ad.pendown()
         x = (
             (1 - t) ** 3 * x1
             + 3 * (1 - t) ** 2 * t * x2

@@ -28,7 +28,7 @@ def real_callback(c):
             c = json.loads(c)
         cell_x = c["cell"][0]
         cell_y = c["cell"][1]
-        params = c["params"]
+        params = c["path"]
         bezier(cell_x, cell_y, params)
     except Exception as e:
         print("Error executing command:", e)
