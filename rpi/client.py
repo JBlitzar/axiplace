@@ -6,6 +6,9 @@ import requests
 import cv2
 import numpy as np
 from draw import bezier
+import traceback
+import json
+import sys
 
 app = Flask(__name__)
 
@@ -21,12 +24,15 @@ def fake_callback(c):  # ts had better be blocking upon implementation
 def real_callback(c):
     print(f"Executing command: {c}")
     try:
+        if type(c) == str:
+            c = json.loads(c)
         cell_x = c["cell"][0]
         cell_y = c["cell"][1]
         params = c["params"]
         bezier(cell_x, cell_y, params)
     except Exception as e:
         print("Error executing command:", e)
+        traceback.print_exc(file=sys.stderr)
 
 API_BASE = "https://axiplace.vercel.app"
 

@@ -84,12 +84,14 @@ def add_command():
     ip = request.remote_addr
     rate_limit_key = f"rate_limit:{ip}"
 
+    go_anyways = ip == os.getenv("SOURCE_IP")
+
     # Check rate limit in Redis
     last_time = r.get(rate_limit_key)
     if last_time:
         last_time = float(last_time.decode("utf-8"))
         time_left = TIMEOUT_S - (time.time() - last_time)
-        if time_left > 0:
+        if time_left > 0 and not go_anyways:
             return Response(
                 json.dumps(
                     {
