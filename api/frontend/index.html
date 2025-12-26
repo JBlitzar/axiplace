@@ -10,7 +10,7 @@
 
     <style>
       body {
-        overflow-x: hidden;
+        overflow-x: auto;
       }
       canvas {
         border: 1px solid #ccc;
@@ -20,23 +20,23 @@
       }
 
       .stream-wrapper {
-        display: flex;
-        justify-content: center;
+        position: relative;
         width: 100%;
+        min-height: 100px;
       }
 
       #stream-container {
         position: relative;
         display: inline-block;
-        min-width: 100vw;
-        flex-shrink: 0;
-        
+        left: 50%;
+        transform: translateX(-50%);
       }
 
       #stream {
         display: block;
-        width: 100%;
+        width: auto;
         height: auto;
+        max-width: none;
       }
 
       #canvas {
@@ -353,6 +353,14 @@
         window._redrawCells();
       }
 
+      stream.addEventListener("load", () => {
+        resizeCanvas();
+        // Auto-scroll to center the content horizontally
+        const scrollX = (document.documentElement.scrollWidth - window.innerWidth) / 2;
+        if (scrollX > 0) {
+          window.scrollTo({ left: scrollX, behavior: "instant" });
+        }
+      });
       stream.addEventListener("load", resizeCanvas);
       window.addEventListener("resize", resizeCanvas);
 
