@@ -307,14 +307,14 @@
         }
       );
       curCurve = {
-        cell: [window._cell.x, window._cell.y],
-        path: [
-          [p0.x / mcanvas.width, p0.y / mcanvas.height],
-          [p1.x / mcanvas.width, p1.y / mcanvas.height],
-          [p2.x / mcanvas.width, p2.y / mcanvas.height],
-          [p3.x / mcanvas.width, p3.y / mcanvas.height],
-        ],
-      };
+          cell: [GRID_W - window._cell.x - 1, GRID_H - window._cell.y - 1],
+          path: [
+            [1- p0.x / mcanvas.width, 1- p0.y / mcanvas.height],
+            [1- p1.x / mcanvas.width, 1- p1.y / mcanvas.height],
+            [1- p2.x / mcanvas.width, 1- p2.y / mcanvas.height],
+            [1- p3.x / mcanvas.width, 1- p3.y / mcanvas.height],
+          ],
+        };
       mcanvas.add(bezierPath);
       function openEditorModal(cell) {
         window._cell = cell;

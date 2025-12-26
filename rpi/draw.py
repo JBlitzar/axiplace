@@ -54,6 +54,7 @@ def bezier(cell_x, cell_y, params):
         ad.goto((cell_x + x) * cell2inch, (cell_y + y) * cell2inch)
 
     ad.penup()
+    ad.goto(0, 10)
 
 
 def cleanup(signum=None, frame=None):
