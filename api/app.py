@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
-TIMEOUT_S = 300
+TIMEOUT_S = 60
 
 
 r = redis.Redis(
