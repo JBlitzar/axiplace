@@ -21,7 +21,10 @@ HACKCLUB_API_BASE_URL = 'https://auth.hackclub.com/api/v1/'
 
 
 
+
+
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
