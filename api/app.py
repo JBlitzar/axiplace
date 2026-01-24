@@ -67,6 +67,7 @@ def callback():
     )
     session['oauth_token'] = token
     user = oauth.get(HACKCLUB_API_BASE_URL + 'me').json()
+    print("USER", user)
     session['user_id'] = user['id']
     return redirect('/')
 
