@@ -46,7 +46,7 @@ COMMAND_QUEUE_KEY = "command_queue"
 def login():
     return hackclub.authorize_redirect(url_for('callback', _external=True))
 
-@app.route('/callback')
+@app.route('/oauth/callback')
 def callback():
     token = hackclub.authorize_access_token()
     user = hackclub.get('me', token=token).json()
