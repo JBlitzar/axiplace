@@ -8,21 +8,16 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import redis
 from flask import send_from_directory
 
-from authlib.integrations.flask_client import OAuth
+from requests_oauthlib import OAuth2Session
 
 app = Flask(__name__)
-oauth = OAuth(app)
 dotenv.load_dotenv()
 
-hackclub = oauth.register(
-    name='hackclub',
-    client_id=os.getenv('HACKCLUB_CLIENT_ID'),
-    client_secret=os.getenv('HACKCLUB_CLIENT_SECRET'),
-    authorize_url='https://auth.hackclub.com/oauth/authorize',
-    access_token_url='https://auth.hackclub.com/oauth/token',
-    api_base_url='https://auth.hackclub.com/api/v1/',
-    client_kwargs={'scope': 'openid profile'}
-)
+HACKCLUB_CLIENT_ID = os.getenv('HACKCLUB_CLIENT_ID')
+HACKCLUB_CLIENT_SECRET = os.getenv('HACKCLUB_CLIENT_SECRET')
+HACKCLUB_AUTHORIZE_URL = 'https://auth.hackclub.com/oauth/authorize'
+HACKCLUB_TOKEN_URL = 'https://auth.hackclub.com/oauth/token'
+HACKCLUB_API_BASE_URL = 'https://auth.hackclub.com/api/v1/'
 
 
 
@@ -44,12 +39,31 @@ COMMAND_QUEUE_KEY = "command_queue"
 
 @app.route('/login')
 def login():
-    return hackclub.authorize_redirect(url_for('callback', _external=True))
+    redirect_uri = url_for('callback', _external=True)
+    oauth = OAuth2Session(
+        HACKCLUB_CLIENT_ID,
+        scope=['openid', 'profile'],
+        redirect_uri=redirect_uri,
+    )
+    authorization_url, state = oauth.authorization_url(HACKCLUB_AUTHORIZE_URL)
+    session['oauth_state'] = state
+    return redirect(authorization_url)
 
 @app.route('/oauth/callback')
 def callback():
-    token = hackclub.authorize_access_token()
-    user = hackclub.get('me', token=token).json()
+    redirect_uri = url_for('callback', _external=True)
+    oauth = OAuth2Session(
+        HACKCLUB_CLIENT_ID,
+        state=session.get('oauth_state'),
+        redirect_uri=redirect_uri,
+    )
+    token = oauth.fetch_token(
+        HACKCLUB_TOKEN_URL,
+        client_secret=HACKCLUB_CLIENT_SECRET,
+        authorization_response=request.url,
+    )
+    session['oauth_token'] = token
+    user = oauth.get(HACKCLUB_API_BASE_URL + 'me').json()
     session['user_id'] = user['id']
     return redirect('/')
 
