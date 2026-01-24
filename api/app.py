@@ -45,7 +45,7 @@ def login():
     redirect_uri = url_for('callback', _external=True)
     oauth = OAuth2Session(
         HACKCLUB_CLIENT_ID,
-        scope=['openid', 'profile'],
+        scope=['openid'],
         redirect_uri=redirect_uri,
     )
     authorization_url, state = oauth.authorization_url(HACKCLUB_AUTHORIZE_URL)
