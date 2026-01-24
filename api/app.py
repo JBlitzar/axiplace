@@ -1,5 +1,5 @@
 import time
-from flask import Flask, Response, json, request
+from flask import Flask, Response, json, request, url_for, redirect, session
 
 import dotenv
 import os
@@ -8,7 +8,23 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import redis
 from flask import send_from_directory
 
+from authlib.integrations.flask_client import OAuth
+
+app = Flask(__name__)
+oauth = OAuth(app)
 dotenv.load_dotenv()
+
+hackclub = oauth.register(
+    name='hackclub',
+    client_id=os.getenv('HACKCLUB_CLIENT_ID'),
+    client_secret=os.getenv('HACKCLUB_CLIENT_SECRET'),
+    authorize_url='https://auth.hackclub.com/oauth/authorize',
+    access_token_url='https://auth.hackclub.com/oauth/token',
+    api_base_url='https://auth.hackclub.com/api/v1/',
+    client_kwargs={'scope': 'openid profile'}
+)
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +41,18 @@ r = redis.Redis(
 )
 
 COMMAND_QUEUE_KEY = "command_queue"
+
+@app.route('/login')
+def login():
+    return hackclub.authorize_redirect(url_for('callback', _external=True))
+
+@app.route('/callback')
+def callback():
+    token = hackclub.authorize_access_token()
+    user = hackclub.get('me', token=token).json()
+    session['user_id'] = user['id']
+    return redirect('/')
+
 
 
 # is ts auth skib??
@@ -82,7 +110,11 @@ def command_complete():
 @app.post("/add_command")
 def add_command():
     ip = request.remote_addr
-    rate_limit_key = f"rate_limit:{ip}"
+    # rate_limit_key = f"rate_limit:{ip}"
+
+    rate_limit_key = session.get('user_id')
+    if not rate_limit_key:
+        return {"error": "Unauthorized"}, 401
 
     go_anyways = ip == os.getenv("SOURCE_IP")
 

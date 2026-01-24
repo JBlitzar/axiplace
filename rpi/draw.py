@@ -67,6 +67,8 @@ def bezier(cell_x, cell_y, params):
     ad.penup()
     ad.goto(0, 0)
     ad.disconnect()
+    import os
+    os.system("axi off") # turn off motors
 
 
 
