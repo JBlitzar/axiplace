@@ -132,7 +132,7 @@ def add_command():
 
     rate_limit_key = session.get('user_id')
     if not rate_limit_key:
-        return {"error": "Unauthorized"}, 401
+        return {"error": "Unauthorized; please log in!"}, 401
 
     go_anyways = ip == os.getenv("SOURCE_IP")
 
