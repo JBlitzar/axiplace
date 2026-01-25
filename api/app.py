@@ -14,18 +14,15 @@ from requests_oauthlib import OAuth2Session
 app = Flask(__name__)
 dotenv.load_dotenv()
 
-HACKCLUB_CLIENT_ID = os.getenv('HACKCLUB_CLIENT_ID')
-HACKCLUB_CLIENT_SECRET = os.getenv('HACKCLUB_CLIENT_SECRET')
-HACKCLUB_AUTHORIZE_URL = 'https://auth.hackclub.com/oauth/authorize'
-HACKCLUB_TOKEN_URL = 'https://auth.hackclub.com/oauth/token'
-HACKCLUB_API_BASE_URL = 'https://auth.hackclub.com/api/v1/'
-
-
-
+HACKCLUB_CLIENT_ID = os.getenv("HACKCLUB_CLIENT_ID")
+HACKCLUB_CLIENT_SECRET = os.getenv("HACKCLUB_CLIENT_SECRET")
+HACKCLUB_AUTHORIZE_URL = "https://auth.hackclub.com/oauth/authorize"
+HACKCLUB_TOKEN_URL = "https://auth.hackclub.com/oauth/token"
+HACKCLUB_API_BASE_URL = "https://auth.hackclub.com/api/v1/"
 
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
+app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
@@ -41,24 +38,26 @@ r = redis.Redis(
 
 COMMAND_QUEUE_KEY = "command_queue"
 
-@app.route('/login')
+
+@app.route("/login")
 def login():
-    redirect_uri = url_for('callback', _external=True)
+    redirect_uri = url_for("callback", _external=True)
     oauth = OAuth2Session(
         HACKCLUB_CLIENT_ID,
-        scope=['openid'],
+        scope=["openid"],
         redirect_uri=redirect_uri,
     )
     authorization_url, state = oauth.authorization_url(HACKCLUB_AUTHORIZE_URL)
-    session['oauth_state'] = state
+    session["oauth_state"] = state
     return redirect(authorization_url)
 
-@app.route('/oauth/callback')
+
+@app.route("/oauth/callback")
 def callback():
-    redirect_uri = url_for('callback', _external=True)
+    redirect_uri = url_for("callback", _external=True)
     oauth = OAuth2Session(
         HACKCLUB_CLIENT_ID,
-        state=session.get('oauth_state'),
+        state=session.get("oauth_state"),
         redirect_uri=redirect_uri,
     )
     token = oauth.fetch_token(
@@ -66,12 +65,11 @@ def callback():
         client_secret=HACKCLUB_CLIENT_SECRET,
         authorization_response=request.url,
     )
-    session['oauth_token'] = token
-    user = oauth.get(HACKCLUB_API_BASE_URL + 'me').json()
+    session["oauth_token"] = token
+    user = oauth.get(HACKCLUB_API_BASE_URL + "me").json()
     # print("USER", user)
-    session['user_id'] = user['identity']['id']
-    return redirect('/')
-
+    session["user_id"] = user["identity"]["id"]
+    return redirect("/")
 
 
 # is ts auth skib??
@@ -147,7 +145,7 @@ def add_command():
     ip = request.remote_addr
     # rate_limit_key = f"rate_limit:{ip}"
 
-    rate_limit_key = session.get('user_id')
+    rate_limit_key = session.get("user_id")
     if not rate_limit_key:
         return {"error": "Unauthorized; please log in!"}, 401
 
@@ -182,9 +180,28 @@ def add_command():
     return {"status": "success"}
 
 
+def stream_url_is_reachable(url):
+    try:
+        resp = requests.head(url, timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
+
+
 @app.route("/")
 def index():
-    return send_from_directory("frontend", "index.html")
+    stream_url = r.get("stream_url")
+    if stream_url:
+        stream_url = stream_url.decode("utf-8")
+        if stream_url_is_reachable(stream_url):
+            return send_from_directory("frontend", "index.html")
+
+    return send_from_directory("frontend", "offline.html")
+
+
+@app.route("/video.mov")
+def video():
+    return send_from_directory("frontend", "video.mov")
 
 
 if __name__ == "__main__":
