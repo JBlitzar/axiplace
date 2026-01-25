@@ -268,6 +268,7 @@
               for (const cell of grid) {
                 cell.selected = false;
               }
+              window.location.reload();
             } else {
               alert(data.message || data.error || "Failed to submit curve");
             }
