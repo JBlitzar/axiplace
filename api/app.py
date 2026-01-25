@@ -140,7 +140,7 @@ def add_command():
     resp = requests.post(verify_url, data=payload)
     result = resp.json()
     if not result.get("success"):
-        return {"error": "Invalid CAPTCHA"}, 400
+        return {"error": "Invalid CAPTCHA; try reloading?"}, 400
 
     ip = request.remote_addr
     # rate_limit_key = f"rate_limit:{ip}"
