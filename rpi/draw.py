@@ -18,7 +18,7 @@ ad.disconnect()
 os.system("axi off") # turn off motors
 
 cell2inch = 11 / 22 # 11 inches per 22 cells
-banned_cells = {(0,0), (31,0), (0,17), (31,17)}
+banned_cells = {(0,0), (1,0), (0,1), (31,0), (0,17), (31,17)}
 def bezier(cell_x, cell_y, params):
     connected = ad.connect()
 
