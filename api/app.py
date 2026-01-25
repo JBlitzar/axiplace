@@ -161,7 +161,7 @@ def add_command():
                 json.dumps(
                     {
                         "status": "error",
-                        "message": f"you need to wait haha; Time left: {time_left:.1f}s",
+                        "message": f"you need to wait (60s timeout); Time left: {time_left:.1f}s",
                     }
                 ),
                 status=429,
