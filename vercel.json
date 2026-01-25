@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!video\\.mov$).*)",
+      "source": "/((?!video\\.mp4$).*)",
       "destination": "/server/server.py"
     }
   ]
