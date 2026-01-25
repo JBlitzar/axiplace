@@ -151,7 +151,6 @@ def add_command():
 
     go_anyways = ip == os.getenv("SOURCE_IP")
 
-    # Check rate limit in Redis
     last_time = r.get(rate_limit_key)
     if last_time:
         last_time = float(last_time.decode("utf-8"))
