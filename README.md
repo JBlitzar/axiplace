@@ -1,0 +1,1 @@
+`uv pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip`

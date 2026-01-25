@@ -32,9 +32,11 @@ sleep 10
 
 url=$(grep -Eo 'https://[^[:space:]]+\.trycloudflare\.com' /tmp/tunnel.log | head -n 1)
 
-curl -X POST https://axiplace.vercel.app/update-stream-url \
-  -H "Content-Type: application/json" \
-  -d "{\"stream_url\": \"$url\"}"
+uv run upstream.py "$url" &
+
+# curl -X POST https://axiplace.vercel.app/update-stream-url \
+#   -H "Content-Type: application/json" \
+#   -d "{\"stream_url\": \"$url\"}"
 
 echo "Stream available at: $url"
 

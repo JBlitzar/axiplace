@@ -1,3 +1,4 @@
+import os
 from flask import Flask, Response
 import subprocess
 import threading
@@ -9,6 +10,8 @@ from draw import bezier
 import traceback
 import json
 import sys
+import dotenv
+dotenv.load_dotenv()
 
 app = Flask(__name__)
 
@@ -60,12 +63,12 @@ def unskew(img):
 
 def poll():
     try:
-        resp = requests.get(f"{API_BASE}/command")
+        resp = requests.get(f"{API_BASE}/command", headers={"x-vercel-protection-secret":os.getenv("PROTECTION_SECRET","")})
         if resp.status_code == 200:
             val = resp.json()
             if val.get("command"):
                 real_callback(val["command"])
-                requests.post(f"{API_BASE}/command_complete", json={"status": "done"})
+                requests.post(f"{API_BASE}/command_complete", headers={"x-vercel-protection-secret":os.getenv("PROTECTION_SECRET","")}, json={"status": "done"})
     except Exception as e:
         print("Polling error:", e)
 

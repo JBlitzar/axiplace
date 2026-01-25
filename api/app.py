@@ -4,6 +4,7 @@ from flask import Flask, Response, json, request, url_for, redirect, session
 import dotenv
 import os
 from flask_cors import CORS
+import requests
 from werkzeug.middleware.proxy_fix import ProxyFix
 import redis
 from flask import send_from_directory
@@ -127,6 +128,22 @@ def command_complete():
 
 @app.post("/add_command")
 def add_command():
+    cftoken = request.json.get("token")
+    # verify
+    if not cftoken:
+        return {"error": "No token provided"}, 400
+    secret = os.getenv("CF_SECRET_KEY")
+    verify_url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    payload = {
+        "secret": secret,
+        "response": cftoken,
+        "remoteip": request.remote_addr,
+    }
+    resp = requests.post(verify_url, data=payload)
+    result = resp.json()
+    if not result.get("success"):
+        return {"error": "Invalid CAPTCHA"}, 400
+
     ip = request.remote_addr
     # rate_limit_key = f"rate_limit:{ip}"
 

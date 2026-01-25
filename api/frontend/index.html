@@ -62,12 +62,18 @@
       <div id="editor-modal" style="display: none">
         <h3>Draw Curve for Cell (<span id="cell-coords"></span>)</h3>
         <canvas id="editor-canvas" width="400" height="400"></canvas>
+        <br>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAACPVohlmwpSW8rs9" data-size="normal"
+  data-callback="onSuccess"></div>
         <br />
         <button id="submit-curve">Submit</button>
       </div>
     </center>
 
     <script>
+        window.onSuccess = function(token) {
+          window.cftoken = token;
+        };
       const API_BASE = "https://axiplace.vercel.app";
 
       async function loadStreamUrl() {
@@ -248,7 +254,7 @@
         fetch(`${API_BASE}/add_command`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: curCurve }),
+          body: JSON.stringify({ command: curCurve, token: window.cftoken}),
         })
           .then((response) => response.json())
           .then((data) => {
@@ -603,5 +609,10 @@
         }
       );
     </script>
+    <script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer
+></script>
   </body>
 </html>

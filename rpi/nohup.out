@@ -5,45 +5,6 @@
  * Running on http://127.0.0.1:8000
  * Running on http://192.168.7.200:8000
 [33mPress CTRL+C to quit[0m
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    90  100    21  100    69     81    268 --:--:-- --:--:-- --:--:--   350
-{"status":"success"}
-Stream available at: https://circle-missile-aim-winner.trycloudflare.com
-127.0.0.1 - - [23/Jan/2026 17:41:30] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:43:46] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:44:20] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:44:26] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:44:39] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:45:10] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:46:12] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:46:21] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:46:30] "GET /stream HTTP/1.1" 200 -
-127.0.0.1 - - [23/Jan/2026 17:46:40] "GET /stream HTTP/1.1" 200 -
-Traceback (most recent call last):
-  File "/home/jb-pi/Documents/axiplace/rpi/client.py", line 32, in real_callback
-    bezier(cell_x, cell_y, params)
-  File "/home/jb-pi/Documents/axiplace/rpi/draw.py", line 33, in bezier
-    x1, y1 = params[0]
-             ~~~~~~^^^
-IndexError: list index out of range
-Traceback (most recent call last):
-  File "/home/jb-pi/Documents/axiplace/rpi/client.py", line 32, in real_callback
-    bezier(cell_x, cell_y, params)
-  File "/home/jb-pi/Documents/axiplace/rpi/draw.py", line 33, in bezier
-    x1, y1 = params[0]
-             ~~~~~~^^^
-IndexError: list index out of range
-127.0.0.1 - - [23/Jan/2026 17:50:37] "GET /stream HTTP/1.1" 200 -
-Traceback (most recent call last):
-  File "/home/jb-pi/Documents/axiplace/rpi/client.py", line 32, in real_callback
-    bezier(cell_x, cell_y, params)
-  File "/home/jb-pi/Documents/axiplace/rpi/draw.py", line 33, in bezier
-    x1, y1 = params[0]
-             ~~~~~~^^^
-IndexError: list index out of range
-Cleaning up...
-killing cf
-killing uv
-axi off, up
-exited
+Stream available at: https://equations-twisted-medium-moore.trycloudflare.com
+Stream URL set to: https://equations-twisted-medium-moore.trycloudflare.com
+127.0.0.1 - - [24/Jan/2026 16:53:15] "GET /stream HTTP/1.1" 200 -

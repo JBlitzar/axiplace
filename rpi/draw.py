@@ -70,6 +70,8 @@ def bezier(cell_x, cell_y, params):
     import os
     os.system("axi off") # turn off motors
 
+if __name__ == "__main__":
+    bezier(15, 8, [(0.1, 0.1), (0.9, 0.1), (0.1, 0.9), (0.9, 0.9)])
 
 
 # def cleanup(signum=None, frame=None):
