@@ -618,5 +618,28 @@
   async
   defer
 ></script>
+<script>
+    const img = document.getElementById('stream');
+
+
+    document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+
+        img.src = '';
+    } else {
+
+        window.location.reload
+    }
+    });
+
+
+    window.addEventListener('blur', () => {
+    img.src = '';
+    });
+
+    window.addEventListener('focus', () => {
+        window.location.reload();
+    });
+</script>
   </body>
 </html>
