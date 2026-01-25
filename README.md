@@ -1,1 +1,7 @@
-`uv pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip`
+# Axiplace
+
+![](public/video.gif)
+
+Make bezier curves and have a robot draw them _live_ in real-time! Yes, on a real piece of paper.
+
+> ☞ https://axiplace.vercel.app
