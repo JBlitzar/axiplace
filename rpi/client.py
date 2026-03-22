@@ -39,10 +39,7 @@ def real_callback(c):
 
 API_BASE = "https://axiplace.vercel.app"
 
-"""ul 1413 652
-ur 3486 770
-dl 1230 2301
-dr 3466 2441
+"""ul 984 737, ur 3131 747, bl 868 2476, br 3185 2495
 should be:
 ul 714 156
 ur 2795 156
@@ -52,7 +49,7 @@ dr 2795 1790
 
 X_OFFSET = 150
 
-src_pts = np.float32([[1413, 652], [3486, 770], [1230, 2301], [3466, 2441]]) * 960/4608
+src_pts = np.float32([[984, 737], [3131, 747], [868, 2476], [3185, 2495]]) * 960/4608
 dst_pts = np.float32([[714 + X_OFFSET, 156], [2795 + X_OFFSET, 156], [714 + X_OFFSET, 1790], [2795 + X_OFFSET, 1790]]) * 960/4608
 UNSKEW_MATRIX = cv2.getPerspectiveTransform(src_pts, dst_pts)
 def unskew(img):
