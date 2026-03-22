@@ -1,8 +1,30 @@
 {
-  "rewrites": [
+  "builds": [
     {
-      "source": "/((?!video\\.mp4$).*)",
-      "destination": "/server/server.py"
+      "src": "api/app.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb"
+      }
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/video\\.mp4",
+      "dest": "/public/video.mp4"
+    },
+    {
+      "src": "/video\\.gif",
+      "dest": "/public/video.gif"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/app.py"
+    }
+  ],
+  "installCommand": "pip install -r requirements-vercel.txt"
 }
