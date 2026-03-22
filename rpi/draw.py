@@ -1,34 +1,23 @@
-from pyaxidraw import axidraw
 import numpy as np
-import signal
-import sys
 import os
 
-ad = axidraw.AxiDraw()
-ad.interactive()
-connected = ad.connect()
 
-if not connected:
-    print("Could not connect to plotter!")
-    exit(1)
+def _connect_axidraw():
+    import axi
 
-ad.penup()
-
-ad.disconnect()
-os.system("axi off") # turn off motors
+    device = axi.Device()
+    device.enable_motors()
+    device.pen_up()
+    return device
 
 cell2inch = 11 / 22 # 11 inches per 22 cells
 banned_cells = {(0,0), (1,0), (0,1),(0,2), (31,0), (0,17), (31,17)}
 def bezier(cell_x, cell_y, params):
-    connected = ad.connect()
-
-    if not connected:
-        ad.disconnect()
-        print("Could not connect to plotter!")
-        exit(1)
+    device = _connect_axidraw()
     
     if (cell_x, cell_y) in banned_cells:
-        ad.disconnect()
+        device.disable_motors()
+        device.close()
         return
     
 
@@ -39,12 +28,14 @@ def bezier(cell_x, cell_y, params):
     x4, y4 = params[3]
     flattened = [x1, y1, x2, y2, x3, y3, x4, y4]
     if any(v is None for v in flattened):
-        ad.disconnect()
+        device.disable_motors()
+        device.close()
         return
     if any(not (0 <= v <= 1) for v in flattened):
-        ad.disconnect()
+        device.disable_motors()
+        device.close()
         return
-    ad.penup()
+    device.pen_up()
     points = 100
     flag = False
     
@@ -62,16 +53,15 @@ def bezier(cell_x, cell_y, params):
             + 3 * (1 - t) * t ** 2 * y3
             + t ** 3 * y4
         )
-        ad.goto((cell_x + x) * cell2inch, (cell_y + y) * cell2inch)
+        device.goto((cell_x + x) * cell2inch, (cell_y + y) * cell2inch)
         if not flag:
             flag = True
-            ad.pendown()
+            device.pen_down()
 
-    ad.penup()
-    ad.goto(0, 0)
-    ad.disconnect()
-    import os
-    os.system("axi off") # turn off motors
+    device.pen_up()
+    device.goto(0, 0)
+    device.disable_motors()
+    device.close()
 
 if __name__ == "__main__":
     bezier(15, 8, [(0.1, 0.1), (0.9, 0.1), (0.1, 0.9), (0.9, 0.9)])

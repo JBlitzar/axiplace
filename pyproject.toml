@@ -3,8 +3,9 @@ name = "axiplace"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
+    "axi",
     "cffi>=2.0.0",
     "cryptography>=46.0.3",
     "dotenv>=0.9.9",
@@ -16,3 +17,6 @@ dependencies = [
     "requests>=2.32.5",
     "requests-oauthlib>=2.0.0",
 ]
+
+[tool.uv.sources]
+axi = { path = "../../axi", editable = true }

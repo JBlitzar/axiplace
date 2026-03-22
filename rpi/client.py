@@ -4,6 +4,7 @@ import subprocess
 import threading
 import time
 import requests
+import certifi
 import cv2
 import numpy as np
 from draw import bezier
@@ -12,6 +13,18 @@ import json
 import sys
 import dotenv
 dotenv.load_dotenv()
+
+
+def _ensure_tls_ca_bundle() -> None:
+    ca_bundle = certifi.where()
+
+    for env_var in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
+        current = os.environ.get(env_var)
+        if not current or not os.path.exists(current):
+            os.environ[env_var] = ca_bundle
+
+
+_ensure_tls_ca_bundle()
 
 app = Flask(__name__)
 

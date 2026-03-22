@@ -27,10 +27,27 @@ touch "$logfile"
 cloudflared tunnel --url http://localhost:8000 > "$logfile" 2>&1 &
 CF_PID=$!
 
-while [ ! -s "$logfile" ]; do sleep 0.5; done
-sleep 10
+url=""
+restarts=0
+max_restarts=5
+while [ -z "$url" ]; do
+  # If cloudflared died before producing a URL, restart it.
+  if ! kill -0 "$CF_PID" 2>/dev/null; then
+    restarts=$((restarts + 1))
+    if [ "$restarts" -gt "$max_restarts" ]; then
+      echo "cloudflared failed to start a tunnel after $max_restarts restarts"
+      cleanup
+    fi
+    echo "cloudflared exited; restarting ($restarts/$max_restarts)..."
+    cloudflared tunnel --url http://localhost:8000 > "$logfile" 2>&1 &
+    CF_PID=$!
+  fi
 
-url=$(grep -Eo 'https://[^[:space:]]+\.trycloudflare\.com' /tmp/tunnel.log | head -n 1)
+  url=$(grep -Eo 'https://[^[:space:]]+\.trycloudflare\.com' /tmp/tunnel.log | head -n 1)
+  if [ -z "$url" ]; then
+    sleep 1
+  fi
+done
 
 uv run upstream.py "$url" &
 
